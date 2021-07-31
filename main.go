@@ -12,14 +12,17 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 1 {
-
+	if len(os.Args) != 2 {
+		_, err := fmt.Fprintf(os.Stderr, "usage: %s  <path to chouse you own adventure json>\n", os.Args[0])
+		logFatal("Error during printing to stdout ", err)
+		os.Exit(0)
 	}
-	jsonFilepath := "gopher.json"
-
+	jsonFilepath := os.Args[1]
 	jsonData, err := ioutil.ReadFile(jsonFilepath)
 	logFatal("Error while reading json file", err)
+
 	var story map[string]StoryArc
+
 	err = json.Unmarshal(jsonData, &story)
 	logFatal("Error while converting json", err)
 	if len(story) == 0 {
@@ -29,7 +32,11 @@ func main() {
 }
 
 func processArc(chosenArc string, story map[string]StoryArc) {
-	arc := story[chosenArc]
+	arc, b := story[chosenArc]
+	if !b {
+		fmt.Printf("Cannot find arc %#v  \n", chosenArc)
+		os.Exit(1)
+	}
 	fmt.Println(arc.Title)
 	fmt.Printf(strings.Join(arc.Story[:], "\n"))
 	fmt.Println()
@@ -56,7 +63,6 @@ func processArc(chosenArc string, story map[string]StoryArc) {
 			return
 		}
 	}
-
 }
 
 func printChoices(arc StoryArc) {
